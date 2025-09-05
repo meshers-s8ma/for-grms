@@ -1,0 +1,50 @@
+<!-- app/templates/qr_print_preview.html -->
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Печать QR-кодов</title>
+    <!-- Подключаем основной CSS-файл проекта -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/output.css') }}">
+</head>
+<body class="bg-gray-100">
+
+    <!-- Кнопка печати, которая будет скрыта при печати (print:hidden) -->
+    <div class="p-4 text-right print:hidden">
+        <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md shadow-lg">
+            Печать
+        </button>
+    </div>
+
+    <!-- Контейнер для всех этикеток -->
+    <div class="p-4 md:p-8">
+        <!-- Сетка, которая размещает по 2 этикетки в ряд на средних экранах и больше -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            {% for item in parts_for_print %}
+                <!-- 
+                  Карточка этикетки. 
+                  break-inside-avoid предотвращает разрыв этикетки между страницами при печати.
+                -->
+                <div class="bg-white border border-gray-300 p-4 rounded-lg flex items-center gap-4 break-inside-avoid">
+                    <!-- QR-код -->
+                    <div class="flex-shrink-0">
+                        <img src="{{ item.qr_image }}" alt="QR-код для {{ item.part.part_id }}" class="w-24 h-24 md:w-28 md:h-28">
+                    </div>
+                    <!-- Информация о детали -->
+                    <div class="flex flex-col">
+                        <span class="text-lg md:text-xl font-bold text-gray-800">{{ item.part.name }}</span>
+                        <span class="text-base text-gray-600">{{ item.part.part_id }}</span>
+                        <span class="text-sm text-gray-500 mt-1">Изделие: {{ item.part.product_designation }}</span>
+                    </div>
+                </div>
+            {% else %}
+                <p class="col-span-full text-center text-gray-500">Нет деталей для отображения.</p>
+            {% endfor %}
+
+        </div>
+    </div>
+
+</body>
+</html>

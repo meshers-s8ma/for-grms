@@ -1,0 +1,151 @@
+<!-- app/templates/admin.html -->
+
+{% extends "base.html" %}
+
+{% block title %}Администрирование{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-800">Администрирование</h1>
+    <p class="mt-1 text-gray-600">Выберите раздел для управления.</p>
+</div>
+
+<!-- Сетка для разделов управления -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+    <!-- Карточка: Журналы -->
+    {% if current_user.can(Permission.VIEW_AUDIT_LOG) %}
+    <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow">
+        <h2 class="text-xl font-semibold text-gray-900 mb-2">Журналы</h2>
+        <p class="text-gray-600 mb-4">Просмотр всех действий в системе.</p>
+        <div class="space-y-2">
+            <a href="{{ url_for('admin.user.audit_log') }}" class="block text-blue-600 hover:underline">Журнал деталей</a>
+            <a href="{{ url_for('admin.user.user_log') }}" class="block text-blue-600 hover:underline">Журнал пользователей</a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Карточка: Отчеты -->
+    {% if current_user.can(Permission.VIEW_REPORTS) %}
+    <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow">
+        <h2 class="text-xl font-semibold text-gray-900 mb-2">Отчеты и аналитика</h2>
+        <p class="text-gray-600 mb-4">Статистика и анализ производственных данных.</p>
+        <a href="{{ url_for('admin.report.reports_index') }}" class="text-blue-600 font-semibold hover:underline">Перейти к отчетам &rarr;</a>
+    </div>
+    {% endif %}
+
+    <!-- Карточка: Справочники -->
+    {% if current_user.can(Permission.MANAGE_STAGES) or current_user.can(Permission.MANAGE_ROUTES) %}
+    <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow">
+        <h2 class="text-xl font-semibold text-gray-900 mb-2">Справочники</h2>
+        <p class="text-gray-600 mb-4">Управление этапами и маршрутами.</p>
+        <div class="space-y-2">
+            {% if current_user.can(Permission.MANAGE_STAGES) %}<a href="{{ url_for('admin.management.list_stages') }}" class="block text-blue-600 hover:underline">Справочник этапов</a>{% endif %}
+            {% if current_user.can(Permission.MANAGE_ROUTES) %}<a href="{{ url_for('admin.management.list_routes') }}" class="block text-blue-600 hover:underline">Управление маршрутами</a>{% endif %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Карточка: Пользователи и Роли -->
+    {% if current_user.can(Permission.MANAGE_USERS) or current_user.is_admin() %}
+    <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow">
+        <h2 class="text-xl font-semibold text-gray-900 mb-2">Пользователи</h2>
+        <p class="text-gray-600 mb-4">Управление учетными записями и правами доступа.</p>
+        <div class="space-y-2">
+            {% if current_user.is_admin() %}<a href="{{ url_for('admin.user.list_roles') }}" class="block text-blue-600 hover:underline">Управление ролями</a>{% endif %}
+            {% if current_user.can(Permission.MANAGE_USERS) %}<a href="{{ url_for('admin.user.list_users') }}" class="block text-blue-600 hover:underline">Управление пользователями</a>{% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- Разделитель -->
+<hr class="my-8 border-gray-300">
+
+<!-- Секция добавления деталей -->
+{% if current_user.can(Permission.ADD_PARTS) %}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    
+    <!-- Форма: Добавить деталь вручную -->
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">Добавить деталь вручную</h2>
+        {% if not part_form.route_template.choices %}
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4" role="alert">
+                <p>Сначала необходимо <a href="{{ url_for('admin.management.add_route') }}" class="font-bold hover:underline">создать технологический маршрут</a>.</p>
+            </div>
+        {% else %}
+            <form action="{{ url_for('admin.part.add_single_part') }}" method='post' novalidate enctype="multipart/form-data" class="space-y-4">
+                {{ part_form.hidden_tag() }}
+                
+                <!-- ОБНОВЛЕННЫЙ БЛОК ПОЛЕЙ ФОРМЫ -->
+                <div>
+                    {{ part_form.product.label(class="block text-sm font-medium text-gray-700") }}
+                    {{ part_form.product(class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500") }}
+                </div>
+                
+                <div>
+                    {{ part_form.part_id.label(class="block text-sm font-medium text-gray-700") }}
+                    {{ part_form.part_id(class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500") }}
+                </div>
+
+                <div>
+                    {{ part_form.name.label(class="block text-sm font-medium text-gray-700") }}
+                    {{ part_form.name(class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500") }}
+                </div>
+
+                <div>
+                    {{ part_form.material.label(class="block text-sm font-medium text-gray-700") }}
+                    {{ part_form.material(class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500") }}
+                </div>
+
+                <div>
+                    {{ part_form.size.label(class="block text-sm font-medium text-gray-700") }}
+                    {{ part_form.size(class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500") }}
+                </div>
+                <!-- КОНЕЦ ОБНОВЛЕННОГО БЛОКА -->
+
+                <div>
+                    {{ part_form.quantity_total.label(class="block text-sm font-medium text-gray-700") }}
+                    {{ part_form.quantity_total(class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500") }}
+                </div>
+
+                <div>
+                    {{ part_form.route_template.label(class="block text-sm font-medium text-gray-700") }}
+                    {{ part_form.route_template(class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md") }}
+                </div>
+
+                <div>
+                    {{ part_form.drawing.label(class="block text-sm font-medium text-gray-700") }}
+                    {{ part_form.drawing(class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100") }}
+                </div>
+
+                {{ part_form.submit(class='w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500') }}
+            </form>
+        {% endif %}
+    </div>
+    
+    <!-- Форма: Массовый импорт -->
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">Массовый импорт из Excel/CSV</h2>
+        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" role="alert">
+            <p class="font-bold">Внимание!</p>
+            <ul class="list-disc list-inside mt-2 text-sm">
+                <li>Импорт присваивает деталям маршрут, отмеченный "по умолчанию", если операции не указаны.</li>
+                <li>Если для набора операций маршрут не найден, он будет создан автоматически.</li>
+                <li>Чертежи при массовом импорте не загружаются.</li>
+            </ul>
+        </div>
+        <form action="{{ url_for('admin.part.upload_excel') }}" method='post' enctype='multipart/form-data' novalidate class="space-y-4">
+            {{ upload_form.hidden_tag() }}
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Загрузите файл с колонками <b>"Обозначение"</b>, <b>"Наименование"</b>, <b>"Кол-во"</b>, <b>"Прим."</b> (для материала) и др.</label>
+                {{ upload_form.file(class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100") }}
+            </div>
+            {{ upload_form.submit(class='w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500') }}
+        </form>
+    </div>
+
+</div>
+{% endif %}
+{% endblock %}

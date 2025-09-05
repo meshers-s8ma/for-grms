@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Подтверждение этапа для {{ part.part_id }}{% endblock %}
+
+{% block content %}
+<div class="bg-gray-800 text-white shadow-md text-center py-4 rounded-t-lg max-w-lg mx-auto">
+    <h1 class="text-2xl font-bold">Деталь: {{ part.part_id }}</h1>
+    <h2 class="font-normal text-gray-300 text-lg">
+        Партия: {{ part.quantity_completed }} / {{ part.quantity_total }} шт.
+    </h2>
+</div>
+
+<div class="max-w-lg mx-auto">
+    <div class="bg-white p-8 rounded-b-lg shadow-md text-center">
+        {% if next_stage %}
+            <h2 class="text-xl font-semibold text-gray-800">Следующий этап для выполнения:</h2>
+            <h4 class="text-3xl font-bold text-blue-600 my-4">{{ next_stage.name }}</h4>
+            
+            <form action="{{ url_for('main.confirm_stage', part_id=part.part_id, stage_id=next_stage.id) }}" method="post" novalidate class="space-y-6">
+                {{ form.hidden_tag() }}
+
+                <div>
+                    {{ form.quantity.label(class="block text-sm font-medium text-gray-700 text-left") }}
+                    {# Добавляем атрибуты min и max для клиентской валидации в браузере #}
+                    {% set remaining = part.quantity_total - part.quantity_completed %}
+                    {{ form.quantity(class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500", type="number", min="1", max=remaining) }}
+                    {% for error in form.quantity.errors %}
+                        <p class="mt-2 text-sm text-red-600 text-left">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                
+                <div>
+                    {{ form.operator_name.label(class="block text-sm font-medium text-gray-700 text-left") }}
+                    {{ form.operator_name(class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500") }}
+                    {% for error in form.operator_name.errors %}
+                        <p class="mt-2 text-sm text-red-600 text-left">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                {{ form.submit(class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 cursor-pointer") }}
+            </form>
+
+        {% else %}
+            <h2 class="text-2xl font-bold text-green-600">✅ Все этапы завершены</h2>
+            <p class="text-lg text-center text-gray-700 mt-4">Для этой детали пройдены все этапы технологического маршрута.</p>
+            <a href="{{ url_for('main.dashboard') }}" class="mt-6 inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md">Вернуться на главную</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

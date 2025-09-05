@@ -1,0 +1,14 @@
+<!-- file: app/templates/edit_user.html (ОБНОВЛЕННЫЙ КОД) -->
+
+{% extends "base.html" %}
+
+{% block title %}Редактировать пользователя: {{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Редактировать: {{ user.username }}</h1>
+    <div class="bg-white p-8 rounded-lg shadow-md">
+        {% include '_user_form.html' %}
+    </div>
+</div>
+{% endblock %}

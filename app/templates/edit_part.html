@@ -1,0 +1,60 @@
+<!-- app/templates/edit_part.html -->
+
+{% extends "base.html" %}
+
+{% block title %}Редактирование: {{ part.part_id }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">Редактирование детали</h1>
+        <p class="mt-1 text-gray-600">Обозначение: <span class="font-medium text-gray-900">{{ part.part_id }}</span></p>
+    </div>
+    
+    <div class="bg-white p-8 rounded-lg shadow-md">
+        <form method="post" novalidate enctype="multipart/form-data" class="space-y-6">
+            {{ form.hidden_tag() }} <!-- CSRF токен -->
+
+            <div>
+                {{ form.product_designation.label(class="block text-sm font-medium text-gray-700") }}
+                {{ form.product_designation(class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500") }}
+                {% for error in form.product_designation.errors %}<p class="mt-2 text-sm text-red-600">{{ error }}</p>{% endfor %}
+            </div>
+            
+            <div>
+                {{ form.name.label(class="block text-sm font-medium text-gray-700") }}
+                {{ form.name(class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500") }}
+                {% for error in form.name.errors %}<p class="mt-2 text-sm text-red-600">{{ error }}</p>{% endfor %}
+            </div>
+
+            <div>
+                {{ form.material.label(class="block text-sm font-medium text-gray-700") }}
+                {{ form.material(class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500") }}
+                {% for error in form.material.errors %}<p class="mt-2 text-sm text-red-600">{{ error }}</p>{% endfor %}
+            </div>
+
+            <div>
+                {{ form.size.label(class="block text-sm font-medium text-gray-700") }}
+                {{ form.size(class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500") }}
+                {% for error in form.size.errors %}<p class="mt-2 text-sm text-red-600">{{ error }}</p>{% endfor %}
+            </div>
+            
+            <div>
+                {{ form.drawing.label(class="block text-sm font-medium text-gray-700") }}
+                {% if part.drawing_filename %}
+                    <p class="text-xs text-gray-500">Текущий файл: {{ part.drawing_filename }}. Загрузите новый, чтобы его заменить.</p>
+                {% endif %}
+                {{ form.drawing(class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100") }}
+                {% for error in form.drawing.errors %}<p class="mt-2 text-sm text-red-600">{{ error }}</p>{% endfor %}
+            </div>
+
+            <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+                <a href="{{ url_for('main.history', part_id=part.part_id) }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-md">
+                    Отмена
+                </a>
+                {{ form.submit(class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md cursor-pointer") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

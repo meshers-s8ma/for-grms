@@ -1,0 +1,105 @@
+
+<!DOCTYPE html>
+<html lang="ru" class="h-full bg-gray-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- CSRF токен для AJAX запросов и форм -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    
+    <title>{% block title %}Product Tracker{% endblock %}</title>
+    
+    <!-- Подключение сгенерированного CSS файла Tailwind -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/output.css') }}">
+    
+    <!-- Подключение стилей для галереи изображений lightgallery.js -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/css/lightgallery.min.css" />
+    
+    <!-- Подключение JS-библиотек с CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+</head>
+<body class="h-full flex flex-col">
+
+    <!-- Шапка сайта -->
+    <header class="bg-gray-800 text-white shadow-lg z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <a href="{{ url_for('main.dashboard') }}" class="text-xl font-bold hover:text-gray-300 transition-colors">
+                    Product Tracker
+                </a>
+                <nav class="flex items-center space-x-4">
+                    {% if current_user.is_authenticated %}
+                        <span class="text-sm text-gray-300 hidden sm:block">
+                            {{ current_user.username }} ({{ current_user.role.name }})
+                        </span>
+                        
+                        {# Показываем ссылку на админ-панель, если у пользователя есть хотя бы одно из прав администрирования #}
+                        {% if current_user.can(Permission.ADMIN) or current_user.can(Permission.MANAGE_USERS) or current_user.can(Permission.MANAGE_ROUTES) or current_user.can(Permission.VIEW_REPORTS) or current_user.can(Permission.VIEW_AUDIT_LOG) %}
+                            <a href="{{ url_for('admin.management.admin_page') }}" class="py-2 px-3 bg-gray-700 hover:bg-gray-600 rounded-md text-sm font-medium transition-colors">Админ-панель</a>
+                        {% endif %}
+                        
+                        <a href="{{ url_for('admin.user.logout') }}" class="py-2 px-3 bg-red-600 hover:bg-red-700 rounded-md text-sm font-medium transition-colors">Выйти</a>
+                    {% else %}
+                        <a href="{{ url_for('admin.user.login') }}" class="py-2 px-3 bg-blue-600 hover:bg-blue-700 rounded-md text-sm font-medium transition-colors">Войти</a>
+                    {% endif %}
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Основной контент страницы -->
+    <main class="py-10 flex-grow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- Блок для отображения flash-сообщений -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        {% set colors = {
+                            'success': 'bg-green-100 border-green-500 text-green-700',
+                            'error': 'bg-red-100 border-red-500 text-red-700',
+                            'info': 'bg-blue-100 border-blue-500 text-blue-700'
+                        } %}
+                        {% set color_class = colors.get(category, 'bg-gray-100 border-gray-500 text-gray-700') %}
+                        
+                        <div class="border-l-4 p-4 mb-6 rounded-r-lg shadow-sm {{ color_class }}" role="alert">
+                            <p>{{ message }}</p>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <!-- Блок, который будут заполнять дочерние шаблоны -->
+            {% block content %}
+            {% endblock %}
+            
+        </div>
+    </main>
+    
+    <!-- Подвал сайта -->
+    <footer class="bg-gray-800 text-white mt-auto">
+        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 text-center text-sm text-gray-400">
+            Product Tracker &copy; {{ now().year }}
+        </div>
+    </footer>
+
+    <!-- Контейнер для WebSocket "тост"-уведомлений. main.js будет добавлять сюда элементы. -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-3"></div>
+
+    <!-- Подключение WebSocket-клиента -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+    <!-- Основной JavaScript файл для всего сайта -->
+    <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+    
+    <!-- Подключение скрипта для галереи изображений lightgallery.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/lightgallery.min.js" defer></script>
+    
+    <!-- Блок для скриптов, специфичных для конкретной страницы -->
+    {% block scripts %}
+    {% endblock %}
+    
+</body>
+</html>

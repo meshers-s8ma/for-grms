@@ -1,0 +1,26 @@
+services:
+  web:
+    build: .
+    container_name: product_tracker_app_dev
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    environment:
+      - FLASK_APP=run.py
+    env_file:
+      - .env
+    depends_on:
+      - db
+    command: npm run dev
+
+  db:
+    image: postgres:13
+    container_name: product_tracker_db_dev
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data/
+    env_file:
+      - .env
+
+volumes:
+  postgres_data_dev:

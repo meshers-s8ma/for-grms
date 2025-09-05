@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Добавить пользователя{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Добавить нового пользователя</h1>
+    <div class="bg-white p-8 rounded-lg shadow-md">
+        
+        {# Включаем общий компонент с полями формы #}
+        {% include '_user_form.html' %}
+        
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,54 @@
+<!-- app/templates/reports/index.html -->
+
+{% extends "base.html" %}
+
+{% block title %}Отчеты и аналитика{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-800">Отчеты и аналитика</h1>
+    <a href="{{ url_for('admin.management.admin_page') }}" class="text-blue-600 hover:underline mt-2 inline-block">&larr; Назад в админ-панель</a>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+    <!-- Карточка отчета: Производительность операторов -->
+    <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow flex flex-col">
+        <h2 class="text-xl font-semibold text-gray-900 mb-2">Производительность операторов</h2>
+        <p class="text-gray-600 mb-4 flex-grow">
+            Этот отчет показывает, сколько производственных этапов было закрыто каждым оператором за выбранный период времени. 
+            Помогает оценить вклад каждого сотрудника.
+        </p>
+        <a href="{{ url_for('admin.report.report_operator_performance') }}" class="font-semibold text-blue-600 hover:text-blue-800 self-start">
+            Перейти к отчету &rarr;
+        </a>
+    </div>
+
+    <!-- Карточка отчета: Среднее время выполнения этапов -->
+    <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow flex flex-col">
+        <h2 class="text-xl font-semibold text-gray-900 mb-2">Среднее время выполнения этапов</h2>
+        <p class="text-gray-600 mb-4 flex-grow">
+            Этот отчет анализирует, сколько времени в среднем проходит между завершением одного этапа и следующего. 
+            Помогает выявить "узкие места" и задержки в производственном процессе.
+        </p>
+        <a href="{{ url_for('admin.report.report_stage_duration') }}" class="font-semibold text-blue-600 hover:text-blue-800 self-start">
+            Перейти к отчету &rarr;
+        </a>
+    </div>
+
+    <!-- НОВАЯ КАРТОЧКА: Генерация отчета из облака -->
+    <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow flex flex-col">
+        <h2 class="text-xl font-semibold text-gray-900 mb-2">Генерация отчета из облака</h2>
+        <p class="text-gray-600 mb-4 flex-grow">
+            Создание Word-документа по шаблону на основе данных из Excel-файла, который хранится в облаке OneDrive.
+            Требует предварительной настройки интеграции с Microsoft.
+        </p>
+        <a href="{{ url_for('admin.report.generate_from_cloud') }}" class="font-semibold text-blue-600 hover:text-blue-800 self-start">
+            Сгенерировать отчет &rarr;
+        </a>
+    </div>
+
+    <!-- Здесь можно будет добавлять карточки для новых отчетов в будущем -->
+
+</div>
+{% endblock %}

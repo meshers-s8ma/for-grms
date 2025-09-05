@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 
+  Этот слой используется для добавления наших собственных
+  кастомных классов, которые можно будет использовать в HTML.
+  В данном случае, мы добавляем класс `.highlight` для анимации.
+*/
+@layer components {
+    .highlight {
+        /* Применяем анимацию с именем 'highlight-fade' */
+        animation: highlight-fade 3s ease-in-out;
+    }
+}
+
+/* 
+  Здесь мы определяем саму анимацию.
+  Она плавно изменяет цвет фона от светло-зеленого
+  к прозрачному в течение 3 секунд.
+*/
+@keyframes highlight-fade {
+    from {
+        background-color: #d1fae5; /* Светло-зеленый от Tailwind (green-100) */
+    }
+    to {
+        background-color: transparent;
+    }
+}

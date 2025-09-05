@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Отчет: Среднее время выполнения этапов{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-800">Отчет: Среднее время выполнения этапов</h1>
+    <a href="{{ url_for('admin.report.reports_index') }}" class="text-blue-600 hover:underline mt-2 inline-block">&larr; Назад к выбору отчетов</a>
+</div>
+
+<div class="bg-white p-6 rounded-lg shadow-md mb-6">
+    <p class="text-gray-700">
+        Этот отчет показывает среднее время, которое проходит от завершения предыдущего этапа (или от создания детали) до завершения текущего.
+        Длинные полосы могут указывать на "узкие места" в производственном процессе, где детали ожидают обработки дольше всего.
+    </p>
+</div>
+
+<div class="bg-white p-6 rounded-lg shadow-md">
+    <canvas id="durationChart"></canvas>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', async function () {
+    const ctx = document.getElementById('durationChart').getContext('2d');
+
+    try {
+        const response = await fetch(`/admin/report/api/reports/stage_duration`);
+        const chartData = await response.json();
+
+        if (!chartData || !chartData.labels || chartData.labels.length === 0) {
+            const canvas = ctx.canvas;
+            ctx.font = "16px Arial";
+            ctx.fillStyle = "#6b7280"; // gray-500
+            ctx.textAlign = "center";
+            ctx.fillText("Нет данных для построения отчета", canvas.width / 2, 50);
+            return;
+        }
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: chartData,
+            options: {
+                indexAxis: 'y', // Делаем гистограмму горизонтальной для лучшей читаемости
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        title: { 
+                            display: true, 
+                            text: 'Среднее время (в часах)' 
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { 
+                        display: false 
+                    },
+                    title: { 
+                        display: true, 
+                        text: 'Средняя длительность прохождения этапов',
+                        font: {
+                            size: 18
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.x !== null) {
+                                    const totalHours = context.parsed.x;
+                                    const days = Math.floor(totalHours / 24);
+                                    const hours = Math.floor(totalHours % 24);
+                                    const minutes = Math.round((totalHours - Math.floor(totalHours)) * 60);
+                                    
+                                    let formatted = '';
+                                    if(days > 0) formatted += `${days}д `;
+                                    if(hours > 0) formatted += `${hours}ч `;
+                                    if(minutes > 0) formatted += `${minutes}м`;
+
+                                    label += formatted.trim();
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error("Ошибка при загрузке данных для графика:", error);
+        const canvas = ctx.canvas;
+        ctx.font = "16px Arial";
+        ctx.fillStyle = "#ef4444"; // red-500
+        ctx.textAlign = "center";
+        ctx.fillText("Не удалось загрузить данные для отчета", canvas.width / 2, 50);
+    }
+});
+</script>
+{% endblock %}

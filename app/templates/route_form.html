@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">{{ title }}</h1>
+    <div class="bg-white p-8 rounded-lg shadow-md">
+        <form method="post" novalidate>
+            {{ form.hidden_tag() }}
+            
+            <div class="mb-6">
+                {{ form.name.label(class="block text-sm font-medium text-gray-700") }}
+                {{ form.name(class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500") }}
+                {% for error in form.name.errors %}<p class="mt-2 text-sm text-red-600">{{ error }}</p>{% endfor %}
+            </div>
+
+            <div class="mb-6">
+                <div class="flex items-start">
+                    <div class="flex items-center h-5">
+                        {{ form.is_default(class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded") }}
+                    </div>
+                    <div class="ml-3 text-sm">
+                        {{ form.is_default.label(class="font-medium text-gray-700") }}
+                    </div>
+                </div>
+            </div>
+            
+            <hr class="my-6">
+            
+            <div>
+                <h3 class="text-lg font-medium leading-6 text-gray-900">Этапы маршрута</h3>
+                <p class="mt-1 text-sm text-gray-500">Перетащите, чтобы изменить порядок.</p>
+            </div>
+
+            {% if form.stages.errors %}
+            <div class="mt-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4">
+                {% for error in form.stages.errors %}<p>{{ error }}</p>{% endfor %}
+            </div>
+            {% endif %}
+
+            <template id="stage-template">
+                <div class="stage-entry flex items-center p-3 bg-gray-50 rounded-md mt-2">
+                    <span class="drag-handle cursor-move text-gray-400 hover:text-gray-600 mr-4">☰</span>
+                    <select name="stages" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"></select>
+                    <button type="button" class="remove-stage ml-4 bg-red-100 text-red-700 hover:bg-red-200 p-2 rounded-full leading-none">
+                        <span class="font-bold text-lg">&times;</span>
+                    </button>
+                </div>
+            </template>
+
+            <div id="stages-container" class="mt-4">
+                {% if form.stages.data %}
+                    {% for stage_id in form.stages.data %}
+                        <div class="stage-entry flex items-center p-3 bg-gray-50 rounded-md mt-2">
+                            <span class="drag-handle cursor-move text-gray-400 hover:text-gray-600 mr-4">☰</span>
+                            <select name="stages" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                                {% for choice_id, choice_name in form.stages.choices %}
+                                    <option value="{{ choice_id }}" {% if choice_id == stage_id %}selected{% endif %}>{{ choice_name }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="button" class="remove-stage ml-4 bg-red-100 text-red-700 hover:bg-red-200 p-2 rounded-full leading-none">
+                                <span class="font-bold text-lg">&times;</span>
+                            </button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <button type="button" id="add-stage" class="mt-4 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-md">+ Добавить этап</button>
+
+            <div class="flex justify-end space-x-4 pt-6 mt-6 border-t border-gray-200">
+                <a href="{{ url_for('admin.management.list_routes') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-md">Отмена</a>
+                {{ form.submit(class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('stages-container');
+    const addButton = document.getElementById('add-stage');
+    const template = document.getElementById('stage-template');
+    const allStageChoices = {{ form.stages.choices|tojson }};
+
+    new Sortable(container, { animation: 150, handle: '.drag-handle' });
+
+    function addStageRow() {
+        if (allStageChoices.length === 0) {
+            alert('Справочник этапов пуст! Сначала добавьте этапы.'); return;
+        }
+        const clone = template.content.cloneNode(true);
+        const select = clone.querySelector('select');
+        allStageChoices.forEach(choice => {
+            const option = new Option(choice[1], choice[0]);
+            select.add(option);
+        });
+        container.appendChild(clone);
+    }
+
+    if (container.children.length === 0) {
+        addStageRow();
+    }
+    
+    addButton.addEventListener('click', addStageRow);
+
+    container.addEventListener('click', function(e) {
+        if (e.target.matches('.remove-stage, .remove-stage *')) {
+            if (container.children.length > 1) {
+                e.target.closest('.stage-entry').remove();
+            } else {
+                alert('В маршруте должен быть хотя бы один этап.');
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

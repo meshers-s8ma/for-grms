@@ -1,0 +1,28 @@
+<!-- file: app/templates/_user_form.html (НОВЫЙ ФАЙЛ) -->
+
+<form method="post" novalidate class="space-y-6">
+    {{ form.hidden_tag() }}
+
+    <div>
+        {{ form.username.label(class="block text-sm font-medium text-gray-700") }}
+        {{ form.username(class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500") }}
+        {% for error in form.username.errors %}<p class="mt-2 text-sm text-red-600">{{ error }}</p>{% endfor %}
+    </div>
+    
+    <div>
+        {{ form.password.label(class="block text-sm font-medium text-gray-700") }}
+        {{ form.password(class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500") }}
+        {% for error in form.password.errors %}<p class="mt-2 text-sm text-red-600">{{ error }}</p>{% endfor %}
+    </div>
+    
+    <div>
+        {{ form.role.label(class="block text-sm font-medium text-gray-700") }}
+        {{ form.role(class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md") }}
+        {% for error in form.role.errors %}<p class="mt-2 text-sm text-red-600">{{ error }}</p>{% endfor %}
+    </div>
+    
+    <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+        <a href="{{ url_for('admin.user.list_users') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-md">Отмена</a>
+        {{ form.submit(class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md") }}
+    </div>
+</form>

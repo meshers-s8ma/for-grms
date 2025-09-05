@@ -1,0 +1,41 @@
+services:
+  web:
+    build: .
+    container_name: product_tracker_app_prod
+    restart: always 
+    ports:
+      - "5000:5000"
+    volumes:
+      # Монтируем instance-папку для хранения логов, чертежей и загруженных файлов
+      - ./instance:/app/instance
+      # Монтируем папку с миграциями, чтобы не терять их историю
+      - ./migrations:/app/migrations
+    env_file:
+      - .env
+    depends_on:
+      db:
+        # Сервис web запустится только после того, как сервис db станет "здоровым"
+        condition: service_healthy
+    # Используем наш новый скрипт в качестве точки входа для контейнера.
+    # Этот скрипт выполнит миграции и запустит Gunicorn.
+    entrypoint: /app/entrypoint.sh
+
+  db:
+    image: postgres:13
+    container_name: product_tracker_db_prod
+    restart: always
+    volumes:
+      # Используем именованный том для персистентного хранения данных PostgreSQL
+      - postgres_data_prod:/var/lib/postgresql/data/
+    env_file:
+      - .env
+    healthcheck:
+      # Проверка "здоровья" контейнера с базой данных
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  # Определяем именованный том для данных PostgreSQL
+  postgres_data_prod:

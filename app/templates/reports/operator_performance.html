@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Отчет: Производительность операторов{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-800">Отчет: Производительность операторов</h1>
+    <a href="{{ url_for('admin.report.reports_index') }}" class="text-blue-600 hover:underline mt-2 inline-block">&larr; Назад к выбору отчетов</a>
+</div>
+
+<div class="bg-white p-6 rounded-lg shadow-md mb-6">
+    <h4 class="text-lg font-semibold text-gray-800 mb-4">Фильтр по дате</h4>
+    <form method="get" action="{{ url_for('admin.report.report_operator_performance') }}">
+        <div class="flex flex-wrap items-end gap-4">
+            <div>
+                <label for="date_from" class="block text-sm font-medium text-gray-700">Дата с:</label>
+                <input type="date" id="date_from" name="date_from" value="{{ date_from }}" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label for="date_to" class="block text-sm font-medium text-gray-700">Дата по:</label>
+                <input type="date" id="date_to" name="date_to" value="{{ date_to }}" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md">Сформировать</button>
+        </div>
+    </form>
+</div>
+
+<div class="bg-white p-6 rounded-lg shadow-md">
+    <canvas id="performanceChart"></canvas>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', async function () {
+    const ctx = document.getElementById('performanceChart').getContext('2d');
+    const urlParams = new URLSearchParams(window.location.search);
+    const dateFrom = urlParams.get('date_from') || '';
+    const dateTo = urlParams.get('date_to') || '';
+
+    try {
+        const response = await fetch(`/admin/report/api/reports/operator_performance?date_from=${dateFrom}&date_to=${dateTo}`);
+        const chartData = await response.json();
+
+        if (!chartData || !chartData.labels || chartData.labels.length === 0) {
+            const canvas = ctx.canvas;
+            ctx.font = "16px Arial";
+            ctx.fillStyle = "#6b7280"; // gray-500
+            ctx.textAlign = "center";
+            ctx.fillText("Нет данных за выбранный период", canvas.width / 2, 50);
+            return;
+        }
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: chartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { 
+                            display: true, 
+                            text: 'Количество выполненных этапов' 
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { 
+                        display: false 
+                    },
+                    title: { 
+                        display: true, 
+                        text: 'Производительность операторов',
+                        font: {
+                            size: 18
+                        }
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error("Ошибка при загрузке данных для графика:", error);
+        const canvas = ctx.canvas;
+        ctx.font = "16px Arial";
+        ctx.fillStyle = "#ef4444"; // red-500
+        ctx.textAlign = "center";
+        ctx.fillText("Не удалось загрузить данные для отчета", canvas.width / 2, 50);
+    }
+});
+</script>
+{% endblock %}
